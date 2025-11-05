@@ -1,0 +1,34 @@
+{
+  "name": "compute-escrow-privy",
+  "version": "1.0.0",
+  "description": "EigenX TEE TypeScript Application",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:all": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"npm run dev\" \"npm run dev:frontend\""
+  },
+  "dependencies": {
+    "@privy-io/server-auth": "^1.32.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "eigenx"
+  ]
+}
