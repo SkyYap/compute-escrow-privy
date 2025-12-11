@@ -307,6 +307,25 @@ code {
   cursor: not-allowed;
 }
 
+/* Bid Form */
+.bid-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bid-form h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.bid-form .subtitle {
+  color: #666;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 /* Deposit Form */
 .deposit-form {
   background: white;
@@ -510,7 +529,8 @@ code {
 
 .deposit-form button[type="submit"],
 .transfer-form button[type="submit"],
-.withdraw-form button[type="submit"] {
+.withdraw-form button[type="submit"],
+.bid-form button[type="submit"] {
   width: 100%;
   background-color: #667eea;
   color: white;
@@ -525,7 +545,8 @@ code {
 
 .deposit-form button[type="submit"]:hover:not(:disabled),
 .transfer-form button[type="submit"]:hover:not(:disabled),
-.withdraw-form button[type="submit"]:hover:not(:disabled) {
+.withdraw-form button[type="submit"]:hover:not(:disabled),
+.bid-form button[type="submit"]:hover:not(:disabled) {
   background-color: #5568d3;
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
@@ -533,7 +554,8 @@ code {
 
 .deposit-form button[type="submit"]:disabled,
 .transfer-form button[type="submit"]:disabled,
-.withdraw-form button[type="submit"]:disabled {
+.withdraw-form button[type="submit"]:disabled,
+.bid-form button[type="submit"]:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
