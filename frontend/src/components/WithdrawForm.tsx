@@ -1,355 +1,219 @@
 /**
  * @file components/WithdrawForm.tsx
- * @description Component for withdrawing ETH from the Escrow contract
- * 
- * This component allows authenticated users to:
- * - View their escrow balance
- * - Enter an amount to withdraw
- * - Sign and send a transaction to the escrow contract's withdrawFromEscrow function
- * - Funds are sent directly to their wallet address
- * 
- * Why this component exists:
- * - Provides the withdrawal functionality for users to retrieve funds from escrow
- * - Demonstrates direct contract interaction with Privy wallet signing
- * - Shows transaction status and results
- * - Enables users to withdraw their escrow balance to their wallet
+ * @description Form for withdrawing collateral from the Auction contract
  */
 
 import { useState, useEffect } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createPublicClient, http, formatEther, defineChain, parseEther, parseAbi } from 'viem';
-import { getEscrowAddress } from '../services/api';
-import { RPC_URL, CHAIN_ID } from '../config/constants';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
+import { parseEther, formatEther } from 'viem';
+import { getAuctionAddress } from '../services/api';
+
+const AUCTION_ABI = [
+  {
+    name: 'withdrawCollateral',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+  {
+    name: 'userCollateral',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'nextRoundHighestBidder',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    name: 'nextRoundHighestBid',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+] as const;
 
 interface WithdrawFormProps {
   className?: string;
 }
 
 export function WithdrawForm({ className = '' }: WithdrawFormProps) {
-  const { authenticated, user, ready } = usePrivy();
-  const { wallets } = useWallets();
+  const { address, isConnected } = useAccount();
   const [amount, setAmount] = useState('');
-  const [escrowBalance, setEscrowBalance] = useState<string | null>(null);
-  const [escrowAddress, setEscrowAddress] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [auctionAddress, setAuctionAddress] = useState<`0x${string}` | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{
-    transactionHash: string;
-    blockNumber: string;
-  } | null>(null);
 
-  // Fetch escrow address from backend
-  // Why: We need the escrow contract address to interact with it.
+  // Fetch auction contract address
   useEffect(() => {
-    async function fetchEscrowAddress() {
+    async function fetchAuctionAddress() {
       try {
-        const result = await getEscrowAddress();
-        setEscrowAddress(result.address);
+        const result = await getAuctionAddress();
+        if (result.address) {
+          setAuctionAddress(result.address as `0x${string}`);
+        }
       } catch (err) {
-        console.error('Failed to fetch escrow address:', err);
+        console.error('Failed to fetch auction address:', err);
       }
     }
-
-    fetchEscrowAddress();
+    fetchAuctionAddress();
   }, []);
 
-  // Fetch user's escrow balance from the Escrow contract
-  // Why: Users need to see their escrow balance to know how much they can withdraw.
-  // We read this directly from the contract's userEscrowBalance mapping.
+  // Read user's collateral balance
+  const { data: collateralBalance, refetch: refetchCollateral } = useReadContract({
+    address: auctionAddress ?? undefined,
+    abi: AUCTION_ABI,
+    functionName: 'userCollateral',
+    args: address ? [address] : undefined,
+    query: { enabled: !!auctionAddress && !!address },
+  });
+
+  // Check if user is highest bidder
+  const { data: highestBidder } = useReadContract({
+    address: auctionAddress ?? undefined,
+    abi: AUCTION_ABI,
+    functionName: 'nextRoundHighestBidder',
+    query: { enabled: !!auctionAddress },
+  });
+
+  // Get highest bid amount (locked if user is highest bidder)
+  const { data: highestBid } = useReadContract({
+    address: auctionAddress ?? undefined,
+    abi: AUCTION_ABI,
+    functionName: 'nextRoundHighestBid',
+    query: { enabled: !!auctionAddress },
+  });
+
+  // Calculate withdrawable amount
+  const isHighestBidder = highestBidder?.toLowerCase() === address?.toLowerCase();
+  const lockedAmount = isHighestBidder && highestBid ? highestBid : 0n;
+  const withdrawableAmount = collateralBalance ? collateralBalance - lockedAmount : 0n;
+
+  // Write contract hook
+  const { writeContract, data: txHash, isPending } = useWriteContract();
+
+  // Wait for transaction
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // Refetch collateral after successful withdrawal
   useEffect(() => {
-    async function fetchEscrowBalance() {
-      if (!authenticated || !user?.wallet?.address || !RPC_URL || !escrowAddress) {
-        setEscrowBalance(null);
-        return;
-      }
-
-      try {
-        setBalanceLoading(true);
-        const walletAddress = user.wallet.address;
-        
-        // Create public client for reading blockchain data
-        const chain = defineChain({
-          id: CHAIN_ID,
-          name: 'Custom Chain',
-          network: 'custom',
-          nativeCurrency: {
-            decimals: 18,
-            name: 'Ether',
-            symbol: 'ETH',
-          },
-          rpcUrls: {
-            default: {
-              http: [RPC_URL],
-            },
-          },
-        });
-
-        const publicClient = createPublicClient({
-          chain: chain,
-          transport: http(RPC_URL),
-        });
-
-        // Escrow contract ABI - only need userEscrowBalance function
-        const escrowAbi = parseAbi([
-          'function userEscrowBalance(address) external view returns (uint256)',
-        ]);
-
-        // Read escrow balance from contract
-        const balance = await publicClient.readContract({
-          address: escrowAddress as `0x${string}`,
-          abi: escrowAbi,
-          functionName: 'userEscrowBalance',
-          args: [walletAddress as `0x${string}`],
-        });
-
-        // Convert wei to ETH
-        const balanceEth = formatEther(balance);
-        setEscrowBalance(balanceEth);
-      } catch (err) {
-        console.error('Failed to fetch escrow balance:', err);
-        setEscrowBalance(null);
-      } finally {
-        setBalanceLoading(false);
-      }
+    if (isSuccess) {
+      refetchCollateral();
+      setAmount('');
     }
+  }, [isSuccess, refetchCollateral]);
 
-    fetchEscrowBalance();
-
-    // Refresh escrow balance every 10 seconds
-    const interval = setInterval(fetchEscrowBalance, 10000);
-
-    return () => clearInterval(interval);
-  }, [authenticated, user, escrowAddress]);
-
-  // Validate amount format
-  // Why: We want to ensure the amount is a valid positive number.
-  function isValidAmount(amount: string): boolean {
-    const num = parseFloat(amount);
-    return !isNaN(num) && num > 0;
-  }
-
-  // Handle form submission
-  // Why: When the user submits the form, we need to:
-  // 1. Validate inputs
-  // 2. Get the user's wallet from Privy
-  // 3. Sign and send a transaction calling withdrawFromEscrow on the contract
-  // 4. Display the result
-  async function handleSubmit(e: React.FormEvent) {
+  function handleWithdraw(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
-    // Validate inputs
-    if (!amount.trim()) {
-      setError('Amount is required');
+    if (!amount || parseFloat(amount) <= 0) {
+      setError('Please enter a valid amount');
       return;
     }
 
-    if (!isValidAmount(amount)) {
-      setError('Amount must be a positive number');
+    const withdrawWei = parseEther(amount);
+
+    if (withdrawWei > withdrawableAmount) {
+      setError(`Amount exceeds withdrawable balance of ${formatEther(withdrawableAmount)} ETH`);
       return;
     }
 
-    // Check if amount exceeds escrow balance
-    if (escrowBalance && parseFloat(amount) > parseFloat(escrowBalance)) {
-      setError(`Amount exceeds your escrow balance of ${parseFloat(escrowBalance).toFixed(4)} ETH`);
+    if (!auctionAddress) {
+      setError('Auction contract address not available');
       return;
     }
 
-    if (!authenticated || !user?.wallet) {
-      setError('You must be connected to withdraw funds');
-      return;
-    }
-
-    if (!escrowAddress) {
-      setError('Escrow contract address not available');
-      return;
-    }
-
-    if (!RPC_URL) {
-      setError('RPC URL not configured');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Get the user's wallet from Privy
-      const wallet = wallets[0];
-      
-      if (!wallet || !wallet.address) {
-        throw new Error('Wallet not available');
-      }
-
-      // Get Ethereum provider from Privy wallet
-      const { createWalletClient, custom, createPublicClient, http } = await import('viem');
-      
-      const provider = await wallet.getEthereumProvider();
-      
-      if (!provider) {
-        throw new Error('Wallet provider not available');
-      }
-
-      // Create custom transport using Privy's provider
-      const transport = custom(provider);
-
-      const chain = defineChain({
-        id: CHAIN_ID,
-        name: 'Custom Chain',
-        network: 'custom',
-        nativeCurrency: {
-          decimals: 18,
-          name: 'Ether',
-          symbol: 'ETH',
-        },
-        rpcUrls: {
-          default: {
-            http: [RPC_URL],
-          },
-        },
-      });
-
-      const walletClient = createWalletClient({
-        account: wallet.address as `0x${string}`,
-        chain: chain,
-        transport,
-      });
-
-      // Escrow contract ABI - need withdrawFromEscrow function
-      const escrowAbi = parseAbi([
-        'function withdrawFromEscrow(uint256 amount) external',
-      ]);
-
-      // Convert amount to wei
-      const amountWei = parseEther(amount);
-
-      // Call withdrawFromEscrow on the contract
-      // Why: This function withdraws the specified amount from the user's escrow balance
-      // and sends it directly to their wallet address.
-      const transactionHash = await walletClient.writeContract({
-        address: escrowAddress as `0x${string}`,
-        abi: escrowAbi,
-        functionName: 'withdrawFromEscrow',
-        args: [amountWei],
-      });
-
-      // Wait for transaction receipt
-      const publicClient = createPublicClient({
-        chain: chain,
-        transport: http(RPC_URL),
-      });
-
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: transactionHash,
-      });
-
-      // Display success with transaction details
-      setSuccess({
-        transactionHash,
-        blockNumber: receipt.blockNumber.toString(),
-      });
-
-      // Clear form and refresh balance after a short delay
-      setAmount('');
-      setTimeout(() => {
-        setBalanceLoading(true);
-      }, 2000);
-    } catch (err) {
-      console.error('Withdrawal failed:', err);
-      setError(err instanceof Error ? err.message : 'Withdrawal failed');
-    } finally {
-      setLoading(false);
-    }
+    writeContract({
+      address: auctionAddress,
+      abi: AUCTION_ABI,
+      functionName: 'withdrawCollateral',
+      args: [withdrawWei],
+    });
   }
 
-  if (!authenticated) {
+  if (!isConnected) {
     return (
       <div className={`withdraw-form ${className}`}>
-        <h2>Withdraw from Escrow</h2>
-        <p>Please connect your wallet to withdraw funds</p>
+        <h2>Withdraw Collateral</h2>
+        <p>Please connect your wallet to withdraw collateral</p>
       </div>
     );
   }
 
   return (
     <div className={`withdraw-form ${className}`}>
-      <h2>Withdraw from Escrow</h2>
+      <h2>Withdraw Collateral</h2>
       <p className="subtitle">
-        Withdraw ETH from your escrow balance to your wallet. The funds will be sent directly to your connected wallet address.
+        Withdraw your collateral from the Auction contract. Locked funds cannot be withdrawn.
       </p>
 
-      {escrowAddress && (
-        <p className="escrow-info">
-          Escrow Contract: <code>{escrowAddress}</code>
+      {auctionAddress && (
+        <p className="contract-info">
+          Auction Contract: <code>{auctionAddress}</code>
         </p>
       )}
 
-      {balanceLoading ? (
-        <p className="balance-info">
-          Escrow Balance: <em>Loading...</em>
+      <div className="balance-info">
+        <p>
+          Total Collateral: <strong>
+            {collateralBalance !== undefined
+              ? `${parseFloat(formatEther(collateralBalance)).toFixed(4)} ETH`
+              : 'Loading...'}
+          </strong>
         </p>
-      ) : escrowBalance !== null ? (
-        <p className="balance-info">
-          Escrow Balance: <strong>{parseFloat(escrowBalance).toFixed(4)} ETH</strong>
-          {parseFloat(escrowBalance) > 0 && (
+        {isHighestBidder && lockedAmount > 0n && (
+          <p className="locked-info">
+            🔒 Locked (Highest Bid): <strong>{parseFloat(formatEther(lockedAmount)).toFixed(4)} ETH</strong>
+          </p>
+        )}
+        <p>
+          Withdrawable: <strong>
+            {parseFloat(formatEther(withdrawableAmount)).toFixed(4)} ETH
+          </strong>
+          {withdrawableAmount > 0n && (
             <button
               type="button"
               className="max-button"
-              onClick={() => setAmount(parseFloat(escrowBalance).toFixed(4))}
-              disabled={loading}
+              onClick={() => setAmount(formatEther(withdrawableAmount))}
+              disabled={isPending || isConfirming}
             >
               Use Max
             </button>
           )}
         </p>
-      ) : (
-        <p className="balance-info">
-          Escrow Balance: <em>Unable to fetch</em>
-        </p>
-      )}
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleWithdraw}>
         <div className="form-group">
           <label htmlFor="withdraw-amount">Amount (ETH)</label>
-          <div className="amount-input-wrapper">
-            <input
-              id="withdraw-amount"
-              type="number"
-              step="0.000000000000000001"
-              min="0"
-              max={escrowBalance || undefined}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.0"
-              disabled={loading}
-              className={amount && !isValidAmount(amount) ? 'invalid' : ''}
-            />
-            {escrowBalance && (
-              <span className="max-hint">Max: {parseFloat(escrowBalance).toFixed(4)} ETH</span>
-            )}
-          </div>
-          {amount && !isValidAmount(amount) && (
-            <span className="error-text">Amount must be a positive number</span>
-          )}
-          {amount && escrowBalance && parseFloat(amount) > parseFloat(escrowBalance) && (
-            <span className="error-text">Amount exceeds your escrow balance</span>
-          )}
+          <input
+            id="withdraw-amount"
+            type="number"
+            step="0.0001"
+            min="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.0"
+            disabled={isPending || isConfirming}
+          />
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
-        {success && (
+        {isSuccess && txHash && (
           <div className="success-message">
             <p>✅ Withdrawal successful!</p>
-            <p>Transaction Hash: <code>{success.transactionHash}</code></p>
-            <p>Block Number: {success.blockNumber}</p>
+            <p>Transaction: <code>{txHash}</code></p>
             <a
-              href={`https://sepolia.basescan.org/tx/${success.transactionHash}`}
+              href={`https://sepolia.basescan.org/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -358,11 +222,10 @@ export function WithdrawForm({ className = '' }: WithdrawFormProps) {
           </div>
         )}
 
-        <button type="submit" disabled={loading || !amount || !escrowAddress || !ready}>
-          {loading ? 'Processing...' : 'Withdraw'}
+        <button type="submit" disabled={isPending || isConfirming || !amount || withdrawableAmount === 0n}>
+          {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Withdraw'}
         </button>
       </form>
     </div>
   );
 }
-
