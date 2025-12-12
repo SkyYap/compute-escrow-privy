@@ -4,6 +4,14 @@ pragma solidity ^0.8.19;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
+ * @title ILeaderFeeHook
+ * @dev Interface for the Uniswap V4 hook that receives leader updates
+ */
+interface ILeaderFeeHook {
+    function updateLeader(address newLeader) external;
+}
+
+/**
  * @title Auction
  * @dev Timeboost-style sealed-bid, second-price continuous auction
  * @notice Highest bidder wins 60 seconds of leadership. Winner pays second-highest bid.
@@ -39,6 +47,7 @@ contract Auction is Ownable {
         uint256 totalRentPool
     );
     event RentWithdrawn(address indexed owner, uint256 amount);
+    event HookUpdated(address indexed oldHook, address indexed newHook);
 
     // ============ Constants ============
     uint256 public constant ROUND_DURATION = 60; // 60 seconds per round
@@ -76,6 +85,9 @@ contract Auction is Ownable {
     /// @notice Accumulated rent from winning bids (for owner to withdraw)
     uint256 public rentPool;
 
+    /// @notice The Uniswap V4 hook to notify on leader changes
+    ILeaderFeeHook public hook;
+
     // ============ Modifiers ============
 
     modifier onlySettler() {
@@ -106,6 +118,16 @@ contract Auction is Ownable {
         address oldSettler = settler;
         settler = _newSettler;
         emit SettlerUpdated(oldSettler, _newSettler);
+    }
+
+    /**
+     * @dev Set the Uniswap V4 hook address
+     * @param _hook Address of the LeaderFeeHook contract
+     */
+    function setHook(address _hook) external onlyOwner {
+        address oldHook = address(hook);
+        hook = ILeaderFeeHook(_hook);
+        emit HookUpdated(oldHook, _hook);
     }
 
     // ============ Collateral Functions ============
@@ -218,6 +240,11 @@ contract Auction is Ownable {
             currentLeader = winner;
             currentRoundPricePaid = priceToPay;
 
+            // Notify hook of new leader (Timeboost pattern)
+            if (address(hook) != address(0)) {
+                hook.updateLeader(winner);
+            }
+
             emit RoundResolved(
                 currentRound,
                 winner,
@@ -235,6 +262,11 @@ contract Auction is Ownable {
             currentRoundPricePaid = 0;
 
             emit RoundResolved(currentRound, address(0), 0, 0);
+
+            // Notify hook even when no leader
+            if (address(hook) != address(0)) {
+                hook.updateLeader(address(0));
+            }
         }
     }
 

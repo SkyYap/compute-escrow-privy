@@ -576,3 +576,729 @@ code {
   }
 }
 
+/* ============================================
+   Navigation Header
+   ============================================ */
+
+.nav-header {
+  background-color: #1a1a2e;
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ============================================
+   Uni Page Header
+   ============================================ */
+
+.uni-header {
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #6c5ce7 100%);
+}
+
+.uni-connection {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.uni-connection h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* ============================================
+   Leader Display
+   ============================================ */
+
+.leader-display {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.leader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.leader-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.countdown-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.leader-content {
+  text-align: center;
+}
+
+.leader-address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.leader-address .crown {
+  font-size: 1.5rem;
+}
+
+.leader-address code {
+  font-size: 1.2rem;
+  background-color: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.leader-fee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.leader-fee .fee-icon {
+  font-size: 1.2rem;
+}
+
+.leader-fee strong {
+  color: #667eea;
+  font-size: 1.3rem;
+}
+
+.no-leader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #999;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.no-leader .default-fee {
+  font-size: 0.9rem;
+}
+
+.progress-container {
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+.progress-label {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   Fee Settings
+   ============================================ */
+
+.fee-settings {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fee-settings h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.fee-settings .subtitle {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.connect-prompt {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+.current-fee-display {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.current-fee-display strong {
+  color: #667eea;
+  font-size: 1.3rem;
+}
+
+.fee-slider-container {
+  margin-bottom: 1.5rem;
+}
+
+.fee-slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(to right, #e0e0e0 0%, #667eea 50%, #764ba2 100%);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.fee-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+  transition: transform 0.2s;
+}
+
+.fee-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.fee-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+}
+
+.fee-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.fee-slider-labels .current-value {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.fee-presets {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.preset-button {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-button:hover:not(:disabled) {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.preset-button.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.preset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.update-fee-button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.update-fee-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.update-fee-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   Earnings Panel
+   ============================================ */
+
+.earnings-panel {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.earnings-panel h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.earnings-panel .subtitle {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.earnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.earnings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.token-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.token-symbol {
+  font-weight: bold;
+  color: #333;
+}
+
+.token-balance {
+  font-size: 1.2rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.withdraw-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.withdraw-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.withdraw-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.no-earnings {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 2rem;
+}
+
+/* ============================================
+   Responsive for Uni Page
+   ============================================ */
+
+@media (max-width: 768px) {
+  .nav-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .nav-links {
+    justify-content: center;
+  }
+
+  .leader-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .fee-presets {
+    flex-direction: column;
+  }
+
+  .preset-button {
+    min-width: auto;
+  }
+
+  .earnings-row {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+/* ============================================
+   Swap & Liquidity Grid Layout
+   ============================================ */
+
+.swap-liquidity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .swap-liquidity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   Swap Form
+   ============================================ */
+
+.swap-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.swap-form h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.swap-form .subtitle {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.swap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.swap-input-box {
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.swap-input-box:focus-within {
+  border-color: #667eea;
+}
+
+.swap-input-box.output {
+  background-color: #f0f0f0;
+}
+
+.swap-token-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.token-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.balance-label {
+  color: #999;
+}
+
+.swap-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swap-input-row input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  outline: none;
+}
+
+.swap-input-row input::placeholder {
+  color: #ccc;
+}
+
+.swap-input-row input:disabled {
+  color: #999;
+}
+
+.token-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.swap-direction-button {
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #f5f5f5;
+  background: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin: -0.5rem 0;
+  z-index: 1;
+}
+
+.swap-direction-button:hover:not(:disabled) {
+  transform: rotate(180deg);
+  background: #f0f0f0;
+}
+
+.swap-direction-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.swap-button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.swap-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.swap-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.swap-button.approve {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* ============================================
+   Add Liquidity Form
+   ============================================ */
+
+.add-liquidity-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-liquidity-form h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.add-liquidity-form .subtitle {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.liquidity-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.liquidity-input-box {
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.liquidity-input-box:focus-within {
+  border-color: #667eea;
+}
+
+.liquidity-input-box .input-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.liquidity-input-box .token-label {
+  color: #333;
+  font-weight: 600;
+}
+
+.liquidity-input-box .balance-label {
+  color: #999;
+}
+
+.liquidity-input-box input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #333;
+  outline: none;
+}
+
+.liquidity-input-box input::placeholder {
+  color: #ccc;
+}
+
+.liquidity-input-box input:disabled {
+  color: #999;
+}
+
+.plus-sign {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #999;
+  font-weight: bold;
+}
+
+.liquidity-button {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.liquidity-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.liquidity-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.liquidity-button.approve {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
